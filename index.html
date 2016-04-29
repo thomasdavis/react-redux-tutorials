@@ -3,24 +3,159 @@
   <head>
     <meta charset="UTF-8">
     <title>title</title>
-  <link rel="stylesheet" href="stylesheet.css" type="text/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.1.1/normalize.min.css" type="text/css">
+    <link rel="stylesheet" href="app.css" type="text/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.1/css/font-awesome.css" type="text/css" />
   </head>
   <body>
     <div id="app">
-      <h2>asdas</h2>
-
+      Loading...
     </div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/3.5.2/redux.js" type="text/javascript"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.0.1/react.js" type="text/javascript"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.0.1/react-with-addons.js" type="text/javascript"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-redux/4.4.5/react-redux.js" type="text/javascript"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.min.js" type="text/javascript"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.0.1/react-dom.js" type="text/javascript"></script>
-  <script type="text/babel">
-    ReactDOM.render(
-      <h1>Hello, world!</h1>,
-      document.getElementById('app')
-    );
-  </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.11.2/lodash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/3.5.2/redux.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.0.1/react.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.0.1/react-with-addons.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-redux/4.4.5/react-redux.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.min.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.0.1/react-dom.js" type="text/javascript"></script>
+    <script type="text/babel">
+
+      const {connect, Provider} = ReactRedux;
+      const {createStore} = Redux;
+      const {Component} = React;
+      const {map, filter, remove, without} = _;
+      class ListTable extends Component {
+
+        componentDidMount () {
+        }
+
+        render () {
+          const {items, addItem, removeItem, editItem} = this.props;
+          console.log('render', items);
+          return (<div>
+            <table>
+              <tbody>
+                {map(items, (item, index) => {
+                  console.log(index);
+                  return (<tr key={index}>
+                    <td className="valueColumn"><input onChange={editItem.bind(null, index, item)} type="text" value={item} /></td>
+                    <td className="actionColumn">
+                      <button onClick={removeItem.bind(null, index)} className="delete">
+                        <i className="fa fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>);
+                })}
+              </tbody>
+
+
+            </table>
+            <button onClick={addItem} className="add">
+              <i className="fa fa-plus"></i>
+            </button>
+          </div>);
+        }
+      }
+
+      const mapStateToProps = (state) => {
+        console.log('map', state);
+        return {
+          items: state.items,
+        }
+      }
+
+      /* ACTION CREATORS */
+      const addItemAction = (text) => {
+        return {
+          type: 'ADD_ITEM'
+        }
+      }
+      const removeItemAction = (index) => {
+        return {
+          type: 'REMOVE_ITEM',
+          index: index
+        }
+      }
+
+      const editItemAction = (index, value) => {
+        console.log('editItem', event);
+        return {
+          type: 'EDIT_ITEM',
+          data: {
+            index,
+            value,
+          }
+        }
+      }
+
+
+      const mapDispatchToProps = (dispatch, ownProps) => {
+        return {
+          addItem: () => {
+            console.log('asdas');
+            dispatch(addItemAction('asdasd'))
+          },
+          removeItem: (index) => {
+            console.log('asdas', index);
+            dispatch(removeItemAction(index))
+          },
+          editItem: (index, value, event) => {
+            console.log(index, value, event.target.value);
+            dispatch(editItemAction(index, event.target.value))
+          }
+        }
+      }
+
+      const items = (state = {items: []}, action) => {
+        console.log(state);
+        const items = state.items.slice();
+        switch (action.type) {
+          case 'ADD_ITEM':
+            console.log('asdasd');
+            return {
+              items: state.items.concat([''])
+            };
+          case 'REMOVE_ITEM':
+            console.log('action', state.items, action.item);
+            items.splice(action.index, 1);
+            return {
+              items: items
+            };
+
+          case 'EDIT_ITEM':
+          console.log('action edit', action);
+            items[action.data.index] = action.data.value;
+            console.log(items);
+            return {
+              items: items
+            };
+          default:
+            return state;
+        }
+      }
+
+
+      let store = createStore(items, {
+        items: [
+          'React',
+          'Redux',
+          '?????',
+          'Profit'
+        ]
+      })
+
+      const ListApp = connect(
+        mapStateToProps,
+        mapDispatchToProps
+      )(ListTable)
+
+      ReactDOM.render(
+        <Provider store={store}>
+          <ListApp />
+        </Provider>,
+        document.getElementById('app')
+      );
+    </script>
+
   </body>
 </html>
