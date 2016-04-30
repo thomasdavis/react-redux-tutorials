@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>title</title>
+    <title>React/Redux for beginners</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.1.1/normalize.min.css" type="text/css">
     <link rel="stylesheet" href="app.css" type="text/css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.1/css/font-awesome.css" type="text/css" />
@@ -20,53 +20,97 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.0.1/react-dom.js" type="text/javascript"></script>
     <script type="text/babel">
 
-      const {connect, Provider} = ReactRedux;
-      const {createStore} = Redux;
-      const {Component} = React;
-      const {map, filter, remove, without} = _;
-      class ListTable extends Component {
+      /* IMPORTS */
+      // First lets import the libraries for the tutorial
+      const {connect, Provider} = ReactRedux; // import {connect, Provider} from 'react-redux';
+      const {createStore, compose} = Redux; // import {createStore} from 'redux';
+      const {Component} = React; // import {Component} from 'react';
+      const {map} = _; // import {map} from 'lodash'
 
-        componentDidMount () {
+      /* REACT COMPONENT */
+      // Generally you would spilt this up into logical components
+      // and pass props around correctly etc but we are keeping it as simply as possible
+      class ListTable extends Component {
+        constructor (props, context) {
+          // We use the constructor to make sure our eventHandlers know of `this`
+          // Otherwise they will inherit the normal event arguments
+          super(props, context);
+          this.addItem = this.addItem.bind(this);
+          this.removeItem = this.removeItem.bind(this);
+          this.editItem = this.editItem.bind(this);
         }
 
+        /* EVENT HANDLERS */
+        // They are responsible for calling `dispatch` which will send events to redux
+        addItem () {
+          this.props.dispatch(addItemAction())
+        }
+        removeItem (index) {
+          this.props.dispatch(removeItemAction(index))
+        }
+        editItem (index, event)  {
+          this.props.dispatch(editItemAction(index, event.target.value))
+        }
+
+
         render () {
-          const {items, addItem, removeItem, editItem} = this.props;
-          console.log('render', items);
+          // ES6 desconstruct some constants from our props
+          // Short hand syntax for saying `const items = this.props.items`
+          const {items, addItem} = this.props;
+
+          // Here we essentially just want to loop over our `items` and render the appropiate html
+          // Not too much going on, just take note of the `onChange` and `onClick` which
+          // call the handlers above
           return (<div>
             <table>
               <tbody>
                 {map(items, (item, index) => {
-                  console.log(index);
                   return (<tr key={index}>
-                    <td className="valueColumn"><input onChange={editItem.bind(null, index, item)} type="text" value={item} /></td>
-                    <td className="actionColumn">
-                      <button onClick={removeItem.bind(null, index)} className="delete">
+                    <td><input onChange={this.editItem.bind(null, index)} type="text" value={item} /></td>
+                    <td>
+                      <button onClick={this.removeItem.bind(null, index)} className="delete">
                         <i className="fa fa-trash"></i>
                       </button>
                     </td>
                   </tr>);
                 })}
               </tbody>
-
-
             </table>
-            <button onClick={addItem} className="add">
+            <button onClick={this.addItem} className="add">
               <i className="fa fa-plus"></i>
             </button>
-            <p className="spiel">Listium is hiring</p>
+            <InfoBox />
           </div>);
         }
       }
 
+      /* IGNORE THIS */
+      // Just the information that appears below the demo
+      class InfoBox extends Component {
+        render () {
+          return (<div>
+            <p className="spiel">
+              Install Redux <a href="https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd/related?hl=en">DevTools</a> Chrome Extension to see under the hood
+            </p>
+          </div>);
+        }
+      }
+
+      /* MAP STATE TO PROPS */
+      // Probably the most important method of the demo which handles the React/Redux integration.
+      // When state changes, this method is called, which then you can use to customly
+      // map the state into props that your React component can use
       const mapStateToProps = (state) => {
-        console.log('map', state);
         return {
           items: state.items,
         }
       }
 
       /* ACTION CREATORS */
-      const addItemAction = (text) => {
+      // Action creators allow you to communicate with the redux store
+      // You always send an object with at minimum a property called `type` aka event name
+      // Then send an arbitrary data alongside it
+      const addItemAction = () => {
         return {
           type: 'ADD_ITEM'
         }
@@ -74,88 +118,89 @@
       const removeItemAction = (index) => {
         return {
           type: 'REMOVE_ITEM',
-          index: index
+          index: index // Index is the list item row index
         }
       }
 
-      const editItemAction = (index, value) => {
-        console.log('editItem', event);
+      const editItemAction = (index, newValue) => {
         return {
           type: 'EDIT_ITEM',
           data: {
-            index,
-            value,
+            index: index, // Index is the list item row index
+            value: newValue, // Send the new value after keyboard input
           }
         }
       }
 
+      /* REDUCERS */
+      // Reducers listen for actions that are dispatched and react depending on your logic
+      // All state in Redux is immutable(never changes) so we always have to return a new
+      // state object.
+      // We are going to copy the current state and return a new one based off the action creators above
+      const appReducer = (state = {items: []}, action) => {
 
-      const mapDispatchToProps = (dispatch, ownProps) => {
-        return {
-          addItem: () => {
-            console.log('asdas');
-            dispatch(addItemAction('asdasd'))
-          },
-          removeItem: (index) => {
-            console.log('asdas', index);
-            dispatch(removeItemAction(index))
-          },
-          editItem: (index, value, event) => {
-            console.log(index, value, event.target.value);
-            dispatch(editItemAction(index, event.target.value))
-          }
-        }
-      }
-
-      const items = (state = {items: []}, action) => {
-        console.log(state);
-        const items = state.items.slice();
+        let items = state.items.slice(); // Nice hack to truely clone an array without reference
+        // This is quite a common way of deciding which event to process
+        // Note: ALL events will be coming through this reducer
+        console.log('Actions', action); // Open your console to see what actions look like
+        // Even better, install Redux DevTools and your mind will be blown
         switch (action.type) {
           case 'ADD_ITEM':
-            console.log('asdasd');
-            return {
-              items: state.items.concat([''])
-            };
+            items.push('') // Add an extra element to items
+            break;
           case 'REMOVE_ITEM':
-            console.log('action', state.items, action.item);
-            items.splice(action.index, 1);
-            return {
-              items: items
-            };
-
+            items.splice(action.index, 1); // Removes element at `index`
+            break;
           case 'EDIT_ITEM':
-          console.log('action edit', action);
-            items[action.data.index] = action.data.value;
-            console.log(items);
-            return {
-              items: items
-            };
-          default:
-            return state;
+            items[action.data.index] = action.data.value; // Change value of `index` to new value
+            break;
         }
+        // As above, we have to return a new state object each time (Redux store is immutable)
+        // It makes sure we know our data can only be modified in one visible way
+        // Also lets us time travel through our application state!
+        const newState = {
+          items: items,
+        }
+        console.log('Current State', newState);
+        return newState;
       }
 
-
-      let store = createStore(items, {
+      /* REDUX STORE */
+      // Create store initializes our Redux store and only has to be called once
+      // The first argument is our `appReducer` defined above, it is almost like a listener
+      // The second is just our initial state which is just a Javascript object
+      // The third is usually where enhancers/middleware goes
+      // In this example it just loads Redux DevTools so everyone can play around
+      let store = createStore(appReducer, {
         items: [
           'React',
           'Redux',
           '?????',
           'Profit'
         ]
-      })
+      }, window.devToolsExtension ? window.devToolsExtension() : undefined)
 
+      // We want to use Redux connect to attach our mapStateToProps to our ListTable (React Component)
       const ListApp = connect(
-        mapStateToProps,
-        mapDispatchToProps
+        mapStateToProps
       )(ListTable)
 
+      // ReactDOM simply renders our component to the page
+      // Though we've wrapped our component with something called `Providor`
+      // `Providor` is a magic react-redux component which lets our store be
+      // accessible by our mapStateToProps methods. Otherwise we would have
+      // to pass it manually every time
       ReactDOM.render(
         <Provider store={store}>
           <ListApp />
         </Provider>,
         document.getElementById('app')
       );
+
+
+      if (window.devToolsExtension) {
+        window.devToolsExtension.open();
+      }
     </script>
 
   </body>

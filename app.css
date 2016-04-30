@@ -30,7 +30,7 @@ input:focus{
   outline: none;
 }
 
-.actionColumn {
+tr td:nth-child(2) {
   width: 40px;
   text-align: center;
   padding: 0;
