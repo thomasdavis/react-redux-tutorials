@@ -30,7 +30,7 @@ First checkout the example, then scan over the `index.html` in the repo. I am ju
 
 (This looks much nicer when properly built with something like Webpack)
 
-```
+```html
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.11.2/lodash.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/3.5.2/redux.js" type="text/javascript"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.0.1/react.js" type="text/javascript"></script>
@@ -57,12 +57,22 @@ So we are importing variables from these npm packages;
 * babel (let's us write ES6 in script tags, transpiles on the fly)
 * react-dom (Let's us render the React components to the page)
 
+## Overview
+
+Basically Redux exposes a publish and subscribe API for the `store`/`state` it creates. Though those words won't get you very far and you will very quickly use the terms Action Creators and Reducers.
+
+React and Redux don't directly communicate, and instead just work with the state of the application.
+
+1) Redux creates a store/state.
+2) React components can then call `store.dispatch` when triggered can send arbritary data to the store
+
 ## React component
 
-Here we define our React component for the tutorial,
+Here we define our React component for the tutorial, as you can see there is nothing magical about it at this point. (It could actually be split up much more logically but one component for the tutorial will reduce complexity)
 
-```
-/* REACT COMPONENT */
+A lot of the explanations can be found in the code comments below.
+
+```js
 class ListTable extends Component {
   constructor (props, context) {
     // We use the constructor to make sure our eventHandlers know of `this`
@@ -73,6 +83,7 @@ class ListTable extends Component {
     this.editItem = this.editItem.bind(this);
   }
 
+  // These event handlers (react) will be responsible for dispatching (redux) our action creators (redux)
   addItem () {
   }
   removeItem (index) {
