@@ -63,8 +63,15 @@ Basically Redux exposes a publish and subscribe API for the `store`/`state` it c
 
 React and Redux don't directly communicate, and instead just work with the state of the application.
 
-1) Redux creates a store/state.
-2) React components can then call `store.dispatch` when triggered can send arbritary data to the store
+1. Redux creates a store/state.
+2. Redux then creates `reducers` (listeners) that listen for actions (events)
+3. React components can dispatch (publish) these events via `store.dispatch`
+4. Redux then reduced (recalculated) state based off the dispatched action and returns a new copy of state. (State is immutable, it never changes, so we end up a history of state over time)
+5. Once state has been reduced, React is free to re-render based off the new state.
+
+
+    A store holds the whole state tree of your application.
+    The only way to change the state inside it is to dispatch an action on it. [1]
 
 ## React component
 
@@ -130,6 +137,10 @@ class ListTable extends Component {
 ## setup the action dispatchers, log the stuff
 
 ## Create the reducers
+
+## References
+
+[1] http://redux.js.org/docs/api/Store.html
 
 - Attributes are camelcase
 - JSX will validate your HTML as you go

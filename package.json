@@ -1,0 +1,19 @@
+{
+  "name": "react-redux-tutorials",
+  "version": "1.0.0",
+  "description": "- Attributes are camelcase - JSX will validate your HTML as you go - state is immutable, it never changes, you have to recreate a new one",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thomasdavis/react-redux-tutorials.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/thomasdavis/react-redux-tutorials/issues"
+  },
+  "homepage": "https://github.com/thomasdavis/react-redux-tutorials#readme"
+}
